@@ -14,12 +14,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    /*界面布局的初始化操作*/
     setWindowIcon(QIcon("://star.ico"));
     setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint);  //禁止最大化
     setFixedSize(this->width(), this->height());     //禁止拉伸
 
+    ui->plainTxtEditLog->setReadOnly(true);
+    ui->lineEdtDir->setReadOnly(true);
+
+
+    /*工作线程*/
     m_workThread = new CWorker;
 
+
+    /*注册信号槽*/
     connect(m_workThread, SIGNAL(setRunStatus(bool)), this, SLOT(SetRunStatus(bool)));
     connect(m_workThread, SIGNAL(logMessage(QString)), this, SLOT(LogMessage(QString)));
 }
