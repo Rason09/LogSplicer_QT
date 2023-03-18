@@ -10,12 +10,17 @@ CONFIG += c++11
 
 SOURCES += \
     LogSplicer.cpp \
+    Logger.cpp \
+    Product.cpp \
     Worker.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    DataDefines.h \
     LogSplicer.h \
+    Logger.h \
+    Product.h \
     Worker.h \
     mainwindow.h
 

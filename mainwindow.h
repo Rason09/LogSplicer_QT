@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "Worker.h"
+#include "Product.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,6 +18,7 @@ public:
     ~MainWindow();
 
     void AddLog(const char *fmt,...);
+    void LoadProductsToComboBox();
 
 public slots:
     void SetRunStatus(bool bRun);
@@ -27,10 +29,16 @@ private slots:
 
     void on_btnRun_clicked();
 
+
+    void onProductComboBoxIndexChangeSlot(int index);
+
 private:
     Ui::MainWindow *ui;
 
-    CWorker *m_workThread;
     bool m_bRun;
+    CWorker *m_workThread;
+
+    std::vector<CProductInfo*> m_vProducts;
+
 };
 #endif // MAINWINDOW_H

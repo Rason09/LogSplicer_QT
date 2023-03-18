@@ -14,53 +14,60 @@
 
 #include <cstdio>
 #include <QFileInfo>
+#include "DataDefines.h"
+#include "Logger.h"
 
 using namespace std;
 
-#define LOG_DOWN_ORDER 1
+//#define LOG_DOWN_ORDER 1
+
+extern int g_order;
 
 /**
- * @brief ¶¨Òåº¯Êý¶ÔÏóÀà
- * 
+ * @brief å®šä¹‰å‡½æ•°å¯¹è±¡ç±»
+ *
  */
 class CComparer
 {
 public:
-    bool operator()(const string& lhs, const string& rhs)  
+    bool operator()(const string& lhs, const string& rhs)
     {
-#ifdef LOG_DOWN_ORDER
-        if(lhs.length() == rhs.length())
+        if(g_order == ID_ORDER_DOWN)
         {
-            return lhs > rhs;
+            if(lhs.length() == rhs.length())
+            {
+                return lhs > rhs;
+            }
+            else
+            {
+                return lhs.length() > rhs.length();
+            }
         }
         else
         {
-            return lhs.length() > rhs.length();
+            if(lhs.length() == rhs.length())
+            {
+                return lhs < rhs;
+            }
+            else
+            {
+                return lhs.length() < rhs.length();
+            }
         }
-#else
-        if(lhs.length() == rhs.length())
-        {
-            return lhs < rhs;
-        }
-        else
-        {
-            return lhs.length() < rhs.length();
-        }
-#endif
     }
 };
 
 /**
- * @brief ÅÐ¶ÏÊÇ·ñÎªÄ¿Â¼
- *  S_ISLNK(st_mode)ÊÇ·ñÊÇÒ»¸öÁ¬½Ó.
-    S_ISREG(st_mode)ÊÇ·ñÊÇÒ»¸ö³£¹æÎÄ¼þ.
-    S_ISDIR(st_mode)ÊÇ·ñÊÇÒ»¸öÄ¿Â¼
-    S_ISCHR(st_mode)ÊÇ·ñÊÇÒ»¸ö×Ö·ûÉè±¸.
-    S_ISBLK(st_mode)ÊÇ·ñÊÇÒ»¸ö¿éÉè±¸
-    S_ISFIFO(st_mode)ÊÇ·ñÊÇÒ»¸öFIFOÎÄ¼þ.
-    S_ISSOCK(st_mode)ÊÇ·ñÊÇÒ»¸öSOCKETÎÄ¼þ.
- * @return true 
- * @return false 
+ * @brief åˆ¤æ–­æ˜¯å¦ä¸ºç›®å½•
+ *  S_ISLNK(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªè¿žæŽ¥.
+    S_ISREG(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªå¸¸è§„æ–‡ä»¶.
+    S_ISDIR(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªç›®å½•
+    S_ISCHR(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªå­—ç¬¦è®¾å¤‡.
+    S_ISBLK(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªå—è®¾å¤‡
+    S_ISFIFO(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªFIFOæ–‡ä»¶.
+    S_ISSOCK(st_mode)æ˜¯å¦æ˜¯ä¸€ä¸ªSOCKETæ–‡ä»¶.
+ * @return true
+ * @return false
 */
 
 
@@ -72,66 +79,66 @@ class CSplicer
 public:
     /**
      * @brief Construct a new CSplicer object
-     * 
-     * @param path 
+     *
+     * @param path
      */
     CSplicer(const std::string &path);
 
 
     /**
      * @brief Destroy the CSplicer object
-     * 
+     *
      */
-    ~CSplicer();
+    virtual ~CSplicer();
 
 
     /**
      * @brief Set the Path object
-     * 
-     * @param path 
+     *
+     * @param path
      */
     void SetPath(const std::string &path);
 
 
     /**
      * @brief Get the Path object
-     * 
-     * @return std::string 
+     *
+     * @return std::string
      */
     std::string GetPath() const;
 
 
     /**
      * @brief Get the Nick Name object
-     * 
-     * @param file 
-     * @return std::string 
+     *
+     * @param file
+     * @return std::string
      */
     std::string GetNickName(const std::string &file);
 
 
     /**
-     * @brief ²åÈëÎÄ¼þÖÁÆ¥ÅäÎÄ¼þ¶ÓÁÐ
-     * 
-     * @param file ÎÄ¼þÃû³Æ£¬²»º¬Â·¾¶£¬º¬ºó×º
-     * @return true 
-     * @return false 
+     * @brief æ’å…¥æ–‡ä»¶è‡³åŒ¹é…æ–‡ä»¶é˜Ÿåˆ—
+     *
+     * @param file æ–‡ä»¶åç§°ï¼Œä¸å«è·¯å¾„ï¼Œå«åŽç¼€
+     * @return true
+     * @return false
      */
     bool InsertFile(const std::string &file);
 
 
     /**
-     * @brief 
-     * 
+     * @brief
+     *
      */
     void ShowFiles();
 
 
     /**
-     * @brief ±éÀúµ±Ç°Ä¿Â¼ÏÂËùÓÐÎÄ¼þ£¬²¢¹éÀà´æ´¢
-     * 
-     * @return true 
-     * @return false 
+     * @brief éåŽ†å½“å‰ç›®å½•ä¸‹æ‰€æœ‰æ–‡ä»¶ï¼Œå¹¶å½’ç±»å­˜å‚¨
+     *
+     * @return true
+     * @return false
      */
     bool ForeachFiles();
 
@@ -139,37 +146,80 @@ public:
 
 
     /**
-     * @brief Æ´½ÓÈÕÖ¾ÊµÏÖ½Ó¿Ú
-     * 
-     * @return true 
-     * @return false 
+     * @brief æ‹¼æŽ¥æ—¥å¿—å®žçŽ°æŽ¥å£
+     *
+     * @return true
+     * @return false
      */
-    bool SpliceFiles();
+    virtual bool SpliceFiles(int iOrder, int iCompress) = 0;
 
     /**
-     * @brief Æ´½ÓÈÕÖ¾´¦Àí½Ó¿Ú£¬¶ÔÍâÊ¹ÓÃ
+     * @brief æ‹¼æŽ¥æ—¥å¿—å¤„ç†æŽ¥å£ï¼Œå¯¹å¤–ä½¿ç”¨
      * struct dirent
         {
-        long d_ino; 				   //inode number Ë÷Òý½ÚµãºÅ
-        off_t d_off; 				   //offset to this dirent ÔÚÄ¿Â¼ÎÄ¼þÖÐµÄÆ«ÒÆ 
-        unsigned short d_reclen; 	   //length of this d_name ÎÄ¼þÃû³¤ 
-        unsigned char d_type; 		   //the type of d_name ÎÄ¼þÀàÐÍ 
-        char d_name [NAME_MAX+1]; 	   //file name (null-terminated) ÎÄ¼þÃû£¬×î³¤255×Ö·û 
+        long d_ino; 				   //inode number ç´¢å¼•èŠ‚ç‚¹å·
+        off_t d_off; 				   //offset to this dirent åœ¨ç›®å½•æ–‡ä»¶ä¸­çš„åç§»
+        unsigned short d_reclen; 	   //length of this d_name æ–‡ä»¶åé•¿
+        unsigned char d_type; 		   //the type of d_name æ–‡ä»¶ç±»åž‹
+        char d_name [NAME_MAX+1]; 	   //file name (null-terminated) æ–‡ä»¶åï¼Œæœ€é•¿255å­—ç¬¦
         }
-     * @param m_strDir 
-     * @return true 
-     * @return false 
+     * @param m_strDir
+     * @return true
+     * @return false
      */
-    bool DoProcess();
+    bool DoProcess(int iOrder, int iCompress);
 
     bool CopyFile(const std::string &srcFile, const std::string &dstFile);
 
-private:
+
+    bool ProcessNoneType();
+    bool ProcessTgzType();
+
+
+    bool ExtractTarGz(QString fileName, QString dstPath);
+
+protected:
 
     std::string m_strDir;
     MapPatternFiles m_mapFiles;
 
 };
 
+
+class CSplicerECU_2022 : public CSplicer
+{
+public:
+    CSplicerECU_2022(const std::string &path):CSplicer(path){};
+    virtual ~CSplicerECU_2022(){};
+
+    bool SpliceFiles(int iOrder, int iCompress) override;
+
+
+};
+
+
+class CSplicerZB_2022 : public CSplicer
+{
+public:
+    CSplicerZB_2022(const std::string &path):CSplicer(path){};
+    virtual ~CSplicerZB_2022(){};
+
+    bool SpliceFiles(int iOrder, int iCompress) override;
+
+
+
+};
+
+class CSplicerOthers : public CSplicer
+{
+public:
+    CSplicerOthers(const std::string &path):CSplicer(path){};
+    virtual ~CSplicerOthers(){};
+
+    bool SpliceFiles(int iOrder, int iCompress) override;
+};
+
+
+CSplicer* CreateSplicer(int iTermType, const std::string& path);
 
 #endif

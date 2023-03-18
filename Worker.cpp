@@ -1,5 +1,4 @@
 #include "Worker.h"
-#include "LogSplicer.h"
 #include <QFile>
 #include <QFileInfo>
 #include <QCoreApplication>
@@ -7,11 +6,23 @@
 #include <QThread>
 #include <QDateTime>
 #include <QDir>
+#include "Logger.h"
+#include "DataDefines.h"
 
 
 CWorker::CWorker(QObject *parent) : QObject(parent),QRunnable()
 {
-    filePath = "";
+    m_filePath = "";
+
+    m_mapInfo.insert(STR_TERM_ECU_2022,     ID_TERM_ECU_2022);
+    m_mapInfo.insert(STR_TERM_ZB_2022,      ID_TERM_ZB_2022);
+    m_mapInfo.insert(STR_TERM_698_ORIGINAL, ID_TERM_698_ORIGINAL);
+    m_mapInfo.insert(STR_TERM_OTHERS,       ID_TERM_OTHERS);
+    m_mapInfo.insert(STR_ORDER_DOWN,        ID_ORDER_DOWN);
+    m_mapInfo.insert(STR_ORDER_UP,          ID_TERM_ECU_2022);
+    m_mapInfo.insert(STR_COMPRESS_NONE,     ID_COMPRESS_NONE);
+    m_mapInfo.insert(STR_COMPRESS_TGZ,      ID_COMPRESS_TGZ);
+
 }
 
 void CWorker::run()
@@ -19,11 +30,13 @@ void CWorker::run()
     QDateTime time1 = QDateTime::currentDateTime();//获取系统当前的时间
     uint nStartTime = time1.toTime_t();
 
-    emit setRunStatus(true);
-    emit logMessage("=========== 开始拼接：" + filePath + " ===========");
+    emit SetRunStatus(true);
+
+    LOG(m_product.ToString());
+    LOG("=========== 开始拼接：" + m_filePath + " ===========");
 
 
-   splice(filePath);
+    Splice(m_filePath);
 
 
     QDateTime time2 = QDateTime::currentDateTime();//获取系统当前的时间
@@ -31,22 +44,32 @@ void CWorker::run()
 
 
     QString totalTime = QString::number(nEndTime-nStartTime, 10);
-    emit logMessage("=========== 拼接完成，总耗时: " + totalTime + " 秒" + " ===========");
-    emit setRunStatus(false);
+    LOG("=========== 拼接完成，总耗时: " + totalTime + " 秒" + " ===========");
+    emit SetRunStatus(false);
 }
 
-void CWorker::setPath(const QString &filePath)
+void CWorker::SetPath(const QString &filePath)
 {
-    this->filePath = filePath;
+    this->m_filePath = filePath;
 }
 
-bool CWorker::splice(const QString &srcPath)
+void CWorker::SetProduct(const CProductInfo& obj)
+{
+    this->m_product = obj;
+}
+
+int CWorker::GetID(const QString& key)
+{
+    return m_mapInfo[key];
+}
+
+bool CWorker::Splice(const QString &srcPath)
 {
     QFileInfo file(srcPath);
     if(!file.isDir())
     {
-        emit logMessage(srcPath + "不是目录，退出");
-        emit setRunStatus(false);
+        LOG(srcPath + "不是目录，退出");
+        emit SetRunStatus(false);
         return false;
     }
 
@@ -60,13 +83,13 @@ bool CWorker::splice(const QString &srcPath)
     {
         if(fileInfo.fileName() == "dbCenter")
         {
-            emit logMessage("dbCenter跳过！");
+            LOG("dbCenter跳过！");
             continue;
         }
 
         if(fileInfo.isDir())
         {
-           splice(fileInfo.filePath());
+           Splice(fileInfo.filePath());
         }
 
         if(fileInfo.isFile())
@@ -74,10 +97,13 @@ bool CWorker::splice(const QString &srcPath)
 
             if(!bDone)
             {
-                emit logMessage("正在拼接：" + srcPath);
-                std::unique_ptr<CSplicer> ptr(new CSplicer(srcPath.toStdString()));
+                //LOG("正在拼接：" + srcPath);
+                m_ptrTool.reset(CreateSplicer(GetID(m_product.GetName()), srcPath.toStdString()));
 
-                ptr->DoProcess();
+                if(m_ptrTool)
+                {
+                    m_ptrTool->DoProcess(GetID(m_product.GetOrder()), GetID(m_product.GetType()));
+                }
 
                 bDone = true;
             }
