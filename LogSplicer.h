@@ -16,6 +16,7 @@
 #include <QFileInfo>
 #include "DataDefines.h"
 #include "Logger.h"
+#include <QDebug>
 
 using namespace std;
 
@@ -32,6 +33,7 @@ class CComparer
 public:
     bool operator()(const string& lhs, const string& rhs)
     {
+        //qDebug() << "g_order = " << g_order;
         if(g_order == ID_ORDER_DOWN)
         {
             if(lhs.length() == rhs.length())
@@ -151,7 +153,7 @@ public:
      * @return true
      * @return false
      */
-    virtual bool SpliceFiles(int iOrder, int iCompress) = 0;
+    virtual bool SpliceFiles(int iCompress) = 0;
 
     /**
      * @brief 拼接日志处理接口，对外使用
@@ -167,7 +169,7 @@ public:
      * @return true
      * @return false
      */
-    bool DoProcess(int iOrder, int iCompress);
+    bool DoProcess(int iCompress);
 
     bool CopyFile(const std::string &srcFile, const std::string &dstFile);
 
@@ -192,7 +194,7 @@ public:
     CSplicerECU_2022(const std::string &path):CSplicer(path){};
     virtual ~CSplicerECU_2022(){};
 
-    bool SpliceFiles(int iOrder, int iCompress) override;
+    bool SpliceFiles(int iCompress) override;
 
 
 };
@@ -204,7 +206,7 @@ public:
     CSplicerZB_2022(const std::string &path):CSplicer(path){};
     virtual ~CSplicerZB_2022(){};
 
-    bool SpliceFiles(int iOrder, int iCompress) override;
+    bool SpliceFiles(int iCompress) override;
 
 
 
@@ -216,7 +218,7 @@ public:
     CSplicerOthers(const std::string &path):CSplicer(path){};
     virtual ~CSplicerOthers(){};
 
-    bool SpliceFiles(int iOrder, int iCompress) override;
+    bool SpliceFiles(int iCompress) override;
 };
 
 

@@ -245,10 +245,10 @@ bool CSplicer::ForeachFiles()
  * @return true
  * @return false
  */
-bool CSplicer::DoProcess(int iOrder, int iCompress)
+bool CSplicer::DoProcess(int iCompress)
 {
     ForeachFiles();
-    SpliceFiles(iOrder, iCompress);
+    SpliceFiles(iCompress);
 
     return true;
 }
@@ -302,26 +302,41 @@ bool CSplicer::ProcessTgzType()
         std::string strSpliceLogFile = m_strDir + "/" + "Splice_" + item.first + ".log";
         remove(strSpliceLogFile.c_str());
 
+        //qDebug() << QString::fromStdString(item.first);
+
+        bool bExist = false;
+        std::string strCurFileName = item.first + ".log";      //当前运行日志文件必须最后拼接，文件格式必须为pattern.log，如user.log， wsapp.log
 
         for(auto& file : item.second)
         {
+            //qDebug() <<  QString::fromStdString(file);
             std::string strSrcLogFile = m_strDir + "/" + file;
 
-            if(QString::fromStdString(file).right(4) == ".tgz")
+            if(file == strCurFileName)
             {
-                if(ExtractTarGz(QString::fromStdString(strSrcLogFile), tempFolderPath))
+                bExist = true;
+                qDebug() << "当前日志文件存在，等于" << QString::fromStdString(strCurFileName);
+            }
+            else   //1.先拼接转存的日志
+            {
+                if(QString::fromStdString(file).right(4) == ".tgz")
                 {
-                    std::string strNewSrcLogFile = tempFolderPath.toStdString() + "/" + item.first + ".log";
-                    CopyFile(strNewSrcLogFile, strSpliceLogFile);
+                    if(ExtractTarGz(QString::fromStdString(strSrcLogFile), tempFolderPath))
+                    {
+                        std::string strNewSrcLogFile = tempFolderPath.toStdString() + "/" + item.first + ".log";
+                        CopyFile(strNewSrcLogFile, strSpliceLogFile);
+                    }
                 }
             }
-            else
-            {
-                CopyFile(strSrcLogFile, strSpliceLogFile);
-            }
-
-
         }
+
+        if(bExist)            //2.最后拼接当前日志文件
+        {
+            std::string strCurLogFile = m_strDir + "/" + strCurFileName;
+            CopyFile(strCurLogFile, strSpliceLogFile);
+        }
+
+
         LOG("拼接日志: " + QString::fromStdString(strSpliceLogFile));
     }
 
@@ -404,16 +419,32 @@ bool CSplicer::ProcessNoneType()
         remove(strSpliceLogFile.c_str());
 
 
+        bool bExist = false;
+        std::string strCurFileName = item.first + ".log";      //当前最新的日志文件必须最后拼接，文件格式必须为pattern.log，如user.log， wsapp.log
+
+
         for(auto& file : item.second)
         {
-            std::string strSrcLogFile = m_strDir + "/" + file;
-             #ifdef LINUX
-            std::string strCmd = "cat " + strSrcLogFile + " >> " + strSpliceLogFile;
-            system(strCmd.c_str());
-            #else
-            CopyFile(strSrcLogFile, strSpliceLogFile);
-            #endif
+            if(file == strCurFileName)
+            {
+                bExist = true;
+                qDebug() << "当前日志文件存在，等于" << QString::fromStdString(strCurFileName);
+            }
+            else   //1.先拼接转存的日志
+            {
+                std::string strSrcLogFile = m_strDir + "/" + file;
+                CopyFile(strSrcLogFile, strSpliceLogFile);
+            }
         }
+
+        if(bExist)            //2.最后拼接当前日志文件
+        {
+            std::string strCurLogFile = m_strDir + "/" + strCurFileName;
+            CopyFile(strCurLogFile, strSpliceLogFile);
+        }
+
+
+
         LOG("拼接日志: " + QString::fromStdString(strSpliceLogFile));
     }
 
@@ -427,10 +458,8 @@ bool CSplicer::ProcessNoneType()
  * @return true
  * @return false
  */
-bool CSplicerECU_2022::SpliceFiles(int iOrder, int iCompress)
+bool CSplicerECU_2022::SpliceFiles(int iCompress)
 {
-    g_order = iOrder;
-
     if(iCompress == ID_COMPRESS_NONE)
     {
         ProcessNoneType();
@@ -454,10 +483,8 @@ bool CSplicerECU_2022::SpliceFiles(int iOrder, int iCompress)
  * @return true
  * @return false
  */
-bool CSplicerZB_2022::SpliceFiles(int iOrder, int iCompress)
+bool CSplicerZB_2022::SpliceFiles(int iCompress)
 {
-    g_order = iOrder;
-
     if(iCompress == ID_COMPRESS_TGZ)
     {
         ProcessTgzType();
@@ -474,10 +501,8 @@ bool CSplicerZB_2022::SpliceFiles(int iOrder, int iCompress)
 
 ////////////////////////////////////// CSplicerOthers ////////////////////////////////////////
 
-bool CSplicerOthers::SpliceFiles(int iOrder, int iCompress)
+bool CSplicerOthers::SpliceFiles(int iCompress)
 {
-    g_order = iOrder;
-
     switch(iCompress)
     {
         case ID_COMPRESS_NONE:

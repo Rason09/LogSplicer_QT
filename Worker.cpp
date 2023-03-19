@@ -9,6 +9,7 @@
 #include "Logger.h"
 #include "DataDefines.h"
 
+extern int g_order;
 
 CWorker::CWorker(QObject *parent) : QObject(parent),QRunnable()
 {
@@ -19,7 +20,7 @@ CWorker::CWorker(QObject *parent) : QObject(parent),QRunnable()
     m_mapInfo.insert(STR_TERM_698_ORIGINAL, ID_TERM_698_ORIGINAL);
     m_mapInfo.insert(STR_TERM_OTHERS,       ID_TERM_OTHERS);
     m_mapInfo.insert(STR_ORDER_DOWN,        ID_ORDER_DOWN);
-    m_mapInfo.insert(STR_ORDER_UP,          ID_TERM_ECU_2022);
+    m_mapInfo.insert(STR_ORDER_UP,          ID_ORDER_UP);
     m_mapInfo.insert(STR_COMPRESS_NONE,     ID_COMPRESS_NONE);
     m_mapInfo.insert(STR_COMPRESS_TGZ,      ID_COMPRESS_TGZ);
 
@@ -35,7 +36,7 @@ void CWorker::run()
     LOG(m_product.ToString());
     LOG("=========== 开始拼接：" + m_filePath + " ===========");
 
-
+    g_order = GetID(m_product.GetOrder());     //开始拼接前先设置好日志排序方式，用于后续set自动排序
     Splice(m_filePath);
 
 
@@ -45,6 +46,8 @@ void CWorker::run()
 
     QString totalTime = QString::number(nEndTime-nStartTime, 10);
     LOG("=========== 拼接完成，总耗时: " + totalTime + " 秒" + " ===========");
+
+
     emit SetRunStatus(false);
 }
 
@@ -102,7 +105,7 @@ bool CWorker::Splice(const QString &srcPath)
 
                 if(m_ptrTool)
                 {
-                    m_ptrTool->DoProcess(GetID(m_product.GetOrder()), GetID(m_product.GetType()));
+                    m_ptrTool->DoProcess(GetID(m_product.GetType()));
                 }
 
                 bDone = true;
