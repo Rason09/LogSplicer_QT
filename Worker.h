@@ -14,6 +14,7 @@ class CWorker : public QObject,public QRunnable
     Q_OBJECT
 public:
     explicit CWorker(QObject *parent = nullptr);
+    virtual ~CWorker();
     void run() override;
 
     void SetPath(const QString &filePath);

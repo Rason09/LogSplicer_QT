@@ -26,6 +26,12 @@ CWorker::CWorker(QObject *parent) : QObject(parent),QRunnable()
 
 }
 
+CWorker::~CWorker()
+{
+
+
+}
+
 void CWorker::run()
 {
     QDateTime time1 = QDateTime::currentDateTime();//获取系统当前的时间

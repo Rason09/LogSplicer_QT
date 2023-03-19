@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "Worker.h"
 #include "Product.h"
+#include "md5_dialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,8 +33,16 @@ private slots:
 
     void onProductComboBoxIndexChangeSlot(int index);
 
+
+    void on_action_about_triggered();
+
+    void on_action_MD5Func_triggered();
+
+    void on_action_OtherFuncs_triggered();
+
 private:
     Ui::MainWindow *ui;
+    MD5_Dialog *m_pDlgMD5;
 
     bool m_bRun;
     CWorker *m_workThread;

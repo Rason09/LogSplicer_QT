@@ -11,21 +11,26 @@ CONFIG += c++11
 SOURCES += \
     LogSplicer.cpp \
     Logger.cpp \
+    MD5Checker.cpp \
     Product.cpp \
     Worker.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    md5_dialog.cpp
 
 HEADERS += \
     DataDefines.h \
     LogSplicer.h \
     Logger.h \
+    MD5Checker.h \
     Product.h \
     Worker.h \
-    mainwindow.h
+    mainwindow.h \
+    md5_dialog.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    md5_dialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

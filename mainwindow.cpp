@@ -214,3 +214,23 @@ void MainWindow::onProductComboBoxIndexChangeSlot(int iIndex)
     }
 }
 
+void MainWindow::on_action_about_triggered()
+{
+    QMessageBox::information(this, tr("信息"), tr("作者：Rason！"));
+}
+
+
+void MainWindow::on_action_MD5Func_triggered()
+{
+    //QMessageBox::warning(this, tr("提示"), tr("功能暂未开发，敬请期待！"));
+
+    m_pDlgMD5 = new MD5_Dialog();
+    m_pDlgMD5->show();
+}
+
+
+void MainWindow::on_action_OtherFuncs_triggered()
+{
+    QMessageBox::warning(this, tr("提示"), tr("功能暂未开发，敬请期待！"));
+}
+
