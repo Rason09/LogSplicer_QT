@@ -165,7 +165,7 @@ void MainWindow::LogMessage(const QString& msg)
 
 void MainWindow::on_btnOpenFile_clicked()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::currentPath(),QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);  //第3个参数为空表示上一次路径，QDir::currentPath()为程序当前所在路径
     ui->lineEdtDir->setText(dir);
 }
 
