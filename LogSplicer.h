@@ -142,7 +142,7 @@ public:
      * @return true
      * @return false
      */
-    bool ForeachFiles();
+    virtual bool ForeachFiles();
 
 
 
@@ -218,6 +218,18 @@ public:
     CSplicerOthers(const std::string &path):CSplicer(path){};
     virtual ~CSplicerOthers(){};
 
+    bool SpliceFiles(int iCompress) override;
+};
+
+
+
+class CSplicer698 : public CSplicer
+{
+public:
+    CSplicer698(const std::string &path):CSplicer(path){};
+    virtual ~CSplicer698(){};
+
+    bool ForeachFiles() override;
     bool SpliceFiles(int iCompress) override;
 };
 

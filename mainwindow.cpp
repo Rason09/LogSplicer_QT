@@ -11,6 +11,20 @@
 #include "Logger.h"
 
 
+
+const QString AUTHOR = "Rason";
+const QString VERSION = "V0.1";
+
+static QString GetBulidDateTime()
+{
+    QString dateTime;
+    dateTime += __DATE__;  //
+    dateTime += __TIME__;  //
+    dateTime.replace("  "," ");
+    return QLocale(QLocale::English).toDateTime(dateTime, "MMM dd yyyyhh:mm:ss").toString("yyyy-MM-dd hh:mm:ss"); //转换成日期类型
+}
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -18,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     /*界面布局的初始化操作*/
+    setWindowTitle(tr("日志拼接工具") + VERSION);
     setWindowIcon(QIcon("://star.ico"));
     setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint);  //禁止最大化
     setFixedSize(this->width(), this->height());     //禁止拉伸
@@ -216,7 +231,8 @@ void MainWindow::onProductComboBoxIndexChangeSlot(int iIndex)
 
 void MainWindow::on_action_about_triggered()
 {
-    QMessageBox::information(this, tr("信息"), tr("作者：Rason！"));
+    QString strInfo = QString("作者：%1\n版本：%2\n日期：%3").arg(AUTHOR, VERSION, GetBulidDateTime());
+    QMessageBox::information(this, tr("信息"), strInfo);
 }
 
 

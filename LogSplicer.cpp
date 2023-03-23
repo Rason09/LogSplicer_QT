@@ -21,8 +21,10 @@ CSplicer* CreateSplicer(int iTermType, const std::string& path)
             ptr = new CSplicerECU_2022(path);
             break;
         case ID_TERM_ZB_2022:
-        case ID_TERM_698_ORIGINAL:
             ptr = new CSplicerZB_2022(path);
+            break;
+        case ID_TERM_698_ORIGINAL:
+            ptr = new CSplicer698(path);
             break;
         case ID_TERM_OTHERS:
             ptr = new CSplicerOthers(path);
@@ -315,7 +317,7 @@ bool CSplicer::ProcessTgzType()
             if(file == strCurFileName)
             {
                 bExist = true;
-                qDebug() << "当前日志文件存在，等于" << QString::fromStdString(strCurFileName);
+                //qDebug() << "当前日志文件存在，等于" << QString::fromStdString(strCurFileName);
             }
             else   //1.先拼接转存的日志
             {
@@ -499,6 +501,135 @@ bool CSplicerZB_2022::SpliceFiles(int iCompress)
     return true;
 }
 
+
+////////////////////////////////////// CSplicer698 ////////////////////////////////////////
+
+///
+/// \brief CSplicer698::ForeachFiles
+/// \return
+///
+bool CSplicer698::ForeachFiles()
+{
+    QString srcPath = QString::fromStdString(m_strDir);
+
+    QDir dir(srcPath);
+    QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::Dirs);
+
+    /*?????????*/
+    foreach (auto fileInfo, fileInfoList)
+    {
+        if(fileInfo.isDir())
+        {
+           continue;
+        }
+
+        if(fileInfo.isFile())
+        {
+            QString qFileName = fileInfo.fileName();
+
+            //qDebug() << qFileName;
+
+            /*清楚之前可能存在的未删除干净的文件*/
+            if(qFileName.right(4) == ".tar" || qFileName.right(4) == ".tgz")
+            {
+                QFile::remove(qFileName);
+            }
+
+
+
+            /*转存文件格式：user.log.tgz.1，需要重命名为标准tgz格式（.tgz后缀），后续执行完成一定要记得删除！*/
+            if(qFileName.length() > 13 &&  qFileName.left(13) == "user.log.tgz.")
+            {
+                QString qNum = qFileName.section('.', 3, 3);    //获取最后日志编号
+                QString qNewFileName = "user.log." + qNum + ".tgz";
+
+                //qDebug() << qNewFileName;
+
+                bool bOK = QFile::copy(srcPath + "/" + qFileName, srcPath + "/" + qNewFileName);
+
+                if(bOK)
+                {
+                    InsertFile(qNewFileName.toStdString());
+                }
+                else
+                {
+                    LOG(QObject::tr("拷贝文件失败：") + qFileName + QObject::tr("->") + qNewFileName);
+                }
+            }
+
+
+            InsertFile(qFileName.toStdString());
+        }
+     }
+    return true;
+}
+
+
+/// \brief CSplicer698::SpliceFiles
+/// \param iCompress
+/// \return
+///
+bool CSplicer698::SpliceFiles(int iCompress)
+{
+    bool bRst = false;
+    switch(iCompress)
+    {
+        case ID_COMPRESS_NONE:
+            bRst =  ProcessNoneType();
+            break;
+        case ID_COMPRESS_TGZ:
+            bRst = ProcessTgzType();
+            break;
+        default:
+            break;
+    }
+
+
+    /*执行完成后，删除临时文件.tgz和.tar*/
+    #if 0
+    for(auto& item : m_mapFiles)
+    {
+        for(auto& fileName : item.second)
+        {
+            QString qFileName = QString::fromStdString(fileName);
+
+            if(qFileName.right(4) == ".tgz")
+            {
+                qDebug() << "delete";
+                QFile::remove(QString::fromStdString(m_strDir) + "/" + qFileName);
+            }
+        }
+    }
+    #endif
+
+    QString srcPath = QString::fromStdString(m_strDir);
+
+    QDir dir(srcPath);
+    QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::Dirs);
+
+    foreach (auto fileInfo, fileInfoList)
+    {
+        if(fileInfo.isDir())
+        {
+           continue;
+        }
+
+        if(fileInfo.isFile())
+        {
+            QString qFileName = fileInfo.fileName();
+
+            if(qFileName.right(4) == ".tar" || qFileName.right(4) == ".tgz")
+            {
+                QFile::remove(srcPath + "/" + qFileName);
+            }
+        }
+    }
+
+    return bRst;
+}
+
+
+
 ////////////////////////////////////// CSplicerOthers ////////////////////////////////////////
 
 bool CSplicerOthers::SpliceFiles(int iCompress)
@@ -517,6 +648,8 @@ bool CSplicerOthers::SpliceFiles(int iCompress)
 
     return true;
 }
+
+
 
 
 
