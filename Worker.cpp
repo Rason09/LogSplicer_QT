@@ -8,22 +8,19 @@
 #include <QDir>
 #include "Logger.h"
 #include "DataDefines.h"
+#include "Task.h"
+#include <chrono>
+#include <atomic>
+
 
 extern int g_order;
+
+
+std::atomic<unsigned int> g_atomicCount(0);  //统计任务个数
 
 CWorker::CWorker(QObject *parent) : QObject(parent),QRunnable()
 {
     m_filePath = "";
-
-    m_mapInfo.insert(STR_TERM_ECU_2022,     ID_TERM_ECU_2022);
-    m_mapInfo.insert(STR_TERM_ZB_2022,      ID_TERM_ZB_2022);
-    m_mapInfo.insert(STR_TERM_698_ORIGINAL, ID_TERM_698_ORIGINAL);
-    m_mapInfo.insert(STR_TERM_OTHERS,       ID_TERM_OTHERS);
-    m_mapInfo.insert(STR_ORDER_DOWN,        ID_ORDER_DOWN);
-    m_mapInfo.insert(STR_ORDER_UP,          ID_ORDER_UP);
-    m_mapInfo.insert(STR_COMPRESS_NONE,     ID_COMPRESS_NONE);
-    m_mapInfo.insert(STR_COMPRESS_TGZ,      ID_COMPRESS_TGZ);
-
 }
 
 CWorker::~CWorker()
@@ -42,8 +39,31 @@ void CWorker::run()
     LOG(m_product.ToString());
     LOG("=========== 开始拼接：" + m_filePath + " ===========");
 
+    m_uiTaskNum = 0;
+    g_atomicCount.store(0);
+
     g_order = GetID(m_product.GetOrder());     //开始拼接前先设置好日志排序方式，用于后续set自动排序
     Splice(m_filePath);
+
+#ifdef CONCURRENT_MODE
+    while(true)
+    {
+        /*
+        if(CThreadPool<CTask>::Instance()->IsIdle())
+        {
+            LOG("线程执行完成");
+            break;
+        }
+        */
+
+        if(m_uiTaskNum == g_atomicCount.load())
+        {
+            break;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+#endif
 
 
     QDateTime time2 = QDateTime::currentDateTime();//获取系统当前的时间
@@ -65,11 +85,6 @@ void CWorker::SetPath(const QString &filePath)
 void CWorker::SetProduct(const CProductInfo& obj)
 {
     this->m_product = obj;
-}
-
-int CWorker::GetID(const QString& key)
-{
-    return m_mapInfo[key];
 }
 
 bool CWorker::Splice(const QString &srcPath)
@@ -106,6 +121,15 @@ bool CWorker::Splice(const QString &srcPath)
 
             if(!bDone)
             {
+
+
+#ifdef CONCURRENT_MODE
+                //LOG("正在拼接：" + srcPath);
+
+                m_uiTaskNum++;
+                CTask *pTask = new CLogTask(GetID(m_product.GetName()), GetID(m_product.GetType()), srcPath.toStdString());
+                CThreadPool<CTask>::Instance()->Append(pTask);
+#else
                 //LOG("正在拼接：" + srcPath);
                 m_ptrTool.reset(CreateSplicer(GetID(m_product.GetName()), srcPath.toStdString()));
 
@@ -113,6 +137,7 @@ bool CWorker::Splice(const QString &srcPath)
                 {
                     m_ptrTool->DoProcess(GetID(m_product.GetType()));
                 }
+#endif
 
                 bDone = true;
             }

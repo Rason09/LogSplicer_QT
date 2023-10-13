@@ -2,15 +2,46 @@
 #define _DATA_DEFINE_H_
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// 关于产品类型说明：
+///
+/// 22版能源控制器/集中器(老)  |  降序   |  无压缩
+///
+/// 22版终端通用             |  降序    | .tgz
+///
+/// 698传统终端              |  降序    | .tgz
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 #include <QString>
+
+
+#define CONCURRENT_MODE        //多线程并发模式
 
 
 //终端产品类型
 enum
 {
-    ID_TERM_ECU_2022 = 0,
-    ID_TERM_ZB_2022,
-    ID_TERM_698_ORIGINAL,
+    ID_TERM_ECU_2022 = 0,         //22集中器和ECU（老），日志不压缩的方式
+    ID_TERM_ZB_2022,              //22专变，适用22版所有终端
+    ID_TERM_698_ORIGINAL,         //传统698终端
     ID_TERM_OTHERS,
 };
 
@@ -31,8 +62,8 @@ enum
 
 
 
-const QString STR_TERM_ECU_2022     = "22版能源控制器/集中器";
-const QString STR_TERM_ZB_2022      = "22版专变III";
+const QString STR_TERM_ZB_2022      = "22版终端通用";
+const QString STR_TERM_ECU_2022     = "22版能源控制器/集中器(老)";
 const QString STR_TERM_698_ORIGINAL = "698传统终端";
 const QString STR_TERM_OTHERS       = "其他";
 

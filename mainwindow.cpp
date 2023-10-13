@@ -9,11 +9,12 @@
 #include <QThreadPool>
 #include "Product.h"
 #include "Logger.h"
+#include "ThreadPool.hpp"
 
 
 
 const QString AUTHOR = "Rason";
-const QString VERSION = "V0.1";
+const QString VERSION = "V1.0";
 
 static QString GetBulidDateTime()
 {
@@ -32,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     /*界面布局的初始化操作*/
-    setWindowTitle(tr("日志拼接工具") + VERSION);
+    setWindowTitle(tr("日志拼接工具") + VERSION + "-" + QLocale(QLocale::English).toDateTime(__DATE__, "MMM dd yyyy").toString("yyyyMMdd"));
     setWindowIcon(QIcon("://star.ico"));
     setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint);  //禁止最大化
     setFixedSize(this->width(), this->height());     //禁止拉伸
@@ -56,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbBoxOrder->addItems(strOrderList);
 
     QStringList strZipList;
-    strZipList << STR_COMPRESS_NONE << STR_COMPRESS_TGZ;
+    strZipList << STR_COMPRESS_TGZ << STR_COMPRESS_NONE;
     ui->cbBoxZipType->clear();
     ui->cbBoxZipType->addItems(strZipList);
 
@@ -69,6 +70,9 @@ MainWindow::MainWindow(QWidget *parent)
     /*工作线程*/
     m_workThread = new CWorker;
     m_workThread->setAutoDelete(false);   //不自动销毁，手动销毁
+
+    /*启动线程池*/
+    CThreadPool<CTask>::Instance()->Start();
 
 
     /*注册信号槽*/
@@ -90,8 +94,8 @@ MainWindow::~MainWindow()
 void MainWindow::LoadProductsToComboBox()
 {
     m_vProducts.clear();
-    m_vProducts.push_back(new CProductInfo(STR_TERM_ECU_2022, STR_ORDER_DOWN, STR_COMPRESS_NONE));
     m_vProducts.push_back(new CProductInfo(STR_TERM_ZB_2022, STR_ORDER_DOWN, STR_COMPRESS_TGZ));
+    m_vProducts.push_back(new CProductInfo(STR_TERM_ECU_2022, STR_ORDER_DOWN, STR_COMPRESS_NONE));
     m_vProducts.push_back(new CProductInfo(STR_TERM_698_ORIGINAL, STR_ORDER_DOWN, STR_COMPRESS_TGZ));
     m_vProducts.push_back(new CProductInfo(STR_TERM_OTHERS, STR_ORDER_UNKNOW, STR_COMPRESS_UNKNOW));
 
@@ -212,21 +216,32 @@ void MainWindow::onProductComboBoxIndexChangeSlot(int iIndex)
 {
     CProductInfo product = ui->cbBoxProduct->itemData(iIndex).value<CProductInfo>();
 
-    //LOG(product.ToString());
 
-    //排序和压只有选择其他产品类型才可以
-    if(product.GetName() == "其他")
+    switch(GetID(product.GetName()))
     {
-        QMessageBox::warning(this, tr("提示"), tr("请选择日志排序方式以及压缩类型！"));
-        ui->cbBoxOrder->setDisabled(false);
-        ui->cbBoxZipType->setDisabled(false);
-        ui->cbBoxOrder->setFocus();
+        case ID_TERM_ZB_2022:
+        case ID_TERM_ECU_2022:
+        case ID_TERM_698_ORIGINAL:
+        {
+            ui->cbBoxOrder->setCurrentText(product.GetOrder());
+            ui->cbBoxOrder->setDisabled(true);
+            ui->cbBoxZipType->setCurrentText(product.GetType());
+            ui->cbBoxZipType->setDisabled(true);
+            break;
+        }
+        case ID_TERM_OTHERS:     //排序和压只有选择其他产品类型才可以
+        {
+            QMessageBox::warning(this, tr("提示"), tr("请选择日志排序方式以及压缩类型！"));
+            ui->cbBoxOrder->setDisabled(false);
+            ui->cbBoxZipType->setDisabled(false);
+            ui->cbBoxOrder->setFocus();
+            break;
+        }
+        default:
+            break;
     }
-    else
-    {
-        ui->cbBoxOrder->setDisabled(true);
-        ui->cbBoxZipType->setDisabled(true);
-    }
+
+    return;
 }
 
 void MainWindow::on_action_about_triggered()

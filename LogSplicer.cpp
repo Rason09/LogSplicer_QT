@@ -295,8 +295,7 @@ bool CSplicer::ProcessTgzType()
 
     for(auto& item : m_mapFiles)
     {
-        /*只有1个文件就不需要拼接*/
-        if(item.second.size() < 2)
+        if(item.second.size() == 0)
         {
             continue;
         }

@@ -13,6 +13,7 @@ SOURCES += \
     Logger.cpp \
     MD5Checker.cpp \
     Product.cpp \
+    Task.cpp \
     Worker.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -24,6 +25,8 @@ HEADERS += \
     Logger.h \
     MD5Checker.h \
     Product.h \
+    Task.h \
+    ThreadPool.hpp \
     Worker.h \
     mainwindow.h \
     md5_dialog.h

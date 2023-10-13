@@ -20,8 +20,6 @@ public:
     void SetPath(const QString &filePath);
     void SetProduct(const CProductInfo& obj);
 
-    int GetID(const QString& key);
-
 signals:
     void SetRunStatus(bool);
 
@@ -34,7 +32,7 @@ private:
 
     std::unique_ptr<CSplicer> m_ptrTool;
 
-    QMap<QString, int> m_mapInfo;
+    unsigned int m_uiTaskNum;          //并发任务个数
 
 };
 
