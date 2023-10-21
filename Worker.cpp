@@ -118,6 +118,13 @@ bool CWorker::Splice(const QString &srcPath)
 
         if(fileInfo.isFile())
         {
+            if(fileInfo.fileName().left(7) == "Splice_")
+            {
+                QString filePath = srcPath + "/" + fileInfo.fileName();
+                LOG("删除历史文件" + filePath);
+                QFile::remove(filePath);
+                continue;
+            }
 
             if(!bDone)
             {
